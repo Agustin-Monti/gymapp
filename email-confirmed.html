@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Confirmando...</title>
+  <script>
+    // Obtener los parámetros de la URL
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get("token");
+    const type = params.get("type");
+
+    // Redirigir al esquema de tu app
+    if (token && type) {
+      const deepLink = `mygymapp://email-confirmed?token=${token}&type=${type}`;
+      window.location.href = deepLink;
+    } else {
+      document.body.innerHTML = "<h2>Error: token inválido</h2>";
+    }
+  </script>
+</head>
+<body>
+  <p>Confirmando correo y redirigiendo a la app...</p>
+</body>
+</html>
