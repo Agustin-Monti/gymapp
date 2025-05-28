@@ -12,22 +12,31 @@ export default function ChangePasswordPage() {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
 
-  useEffect(() => {
-    const url = new URL(window.location.href);
-    const code = url.searchParams.get('code');
+ useEffect(() => {
+    const hash = window.location.hash
+    const query = new URLSearchParams(window.location.search)
+    const code = query.get('code')
   
-    if (code) {
-      supabase.auth.exchangeCodeForSession(code).then(({ data, error }) => {
-        if (error) {
-          setError('Error al establecer la sesión.');
-        } else {
-          setSessionSet(true);
-        }
-      });
-    } else {
-      setError('Código inválido o faltante en la URL.');
+    console.log('HASH:', hash)
+    console.log('CODE:', code)
+  
+    if (!code) {
+      setError('No se encontró el código en la URL.')
+      return
     }
-  }, []);
+  
+    // Intercambia el código por una sesión
+    supabase.auth.exchangeCodeForSession(code).then(({ data, error }) => {
+      if (error) {
+        console.error('Error al intercambiar el código:', error)
+        setError('Error al establecer la sesión. ' + error.message)
+      } else {
+        console.log('Sesión establecida correctamente:', data)
+        setSessionSet(true)
+      }
+    })
+  }, [])
+
 
 
   const handlePasswordChange = async () => {
