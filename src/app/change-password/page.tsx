@@ -13,29 +13,31 @@ export default function ChangePasswordPage() {
   const [success, setSuccess] = useState(false)
 
  useEffect(() => {
-    const hash = window.location.hash
-    const query = new URLSearchParams(window.location.search)
-    const code = query.get('code')
+    const hash = window.location.hash;
+    const params = new URLSearchParams(hash.substring(1)); // remove the '#'
+    const access_token = params.get('access_token');
+    const refresh_token = params.get('refresh_token');
   
-    console.log('HASH:', hash)
-    console.log('CODE:', code)
+    console.log('access_token:', access_token);
+    console.log('refresh_token:', refresh_token);
   
-    if (!code) {
-      setError('No se encontró el código en la URL.')
-      return
+    if (access_token && refresh_token) {
+      supabase.auth.setSession({
+        access_token,
+        refresh_token,
+      }).then(({ error }) => {
+        if (error) {
+          console.error('Error al establecer la sesión:', error);
+          setError('Error al establecer la sesión. ' + error.message);
+        } else {
+          setSessionSet(true);
+        }
+      });
+    } else {
+      setError('Token inválido o faltante en la URL.');
     }
-  
-    // Intercambia el código por una sesión
-    supabase.auth.exchangeCodeForSession(code).then(({ data, error }) => {
-      if (error) {
-        console.error('Error al intercambiar el código:', error)
-        setError('Error al establecer la sesión. ' + error.message)
-      } else {
-        console.log('Sesión establecida correctamente:', data)
-        setSessionSet(true)
-      }
-    })
-  }, [])
+  }, []);
+
 
 
 
