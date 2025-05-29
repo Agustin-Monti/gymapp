@@ -1,9 +1,13 @@
 'use client';
 
+import { useSearchParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabaseClient'; // importa tu cliente
+import { supabase } from '@/lib/supabaseClient';
 
-export default function ChangePasswordPage({ searchParams }: { searchParams: { access_token?: string } }) {
+export default function ChangePasswordPage() {
+  const searchParams = useSearchParams();
+  const access_token = searchParams.get('access_token');
+
   const [email, setEmail] = useState<string | null>(null);
   const [newPassword, setNewPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -11,14 +15,14 @@ export default function ChangePasswordPage({ searchParams }: { searchParams: { a
 
   useEffect(() => {
     async function initSession() {
-      if (!searchParams.access_token) {
+      if (!access_token) {
         setMessage('Token no encontrado en la URL.');
         return;
       }
 
       const { data, error } = await supabase.auth.setSession({
-        access_token: searchParams.access_token,
-        refresh_token: '', // si no tienes, puedes dejar vacío
+        access_token,
+        refresh_token: '',
       });
 
       if (error) {
@@ -34,7 +38,7 @@ export default function ChangePasswordPage({ searchParams }: { searchParams: { a
     }
 
     initSession();
-  }, [searchParams.access_token]);
+  }, [access_token]);
 
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
