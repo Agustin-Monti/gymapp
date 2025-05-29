@@ -1,3 +1,4 @@
+// src/components/ChangePasswordClient.tsx
 'use client';
 
 import { useSearchParams } from 'next/navigation';
