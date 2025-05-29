@@ -1,11 +1,10 @@
 import ChangePasswordClient from '@/components/ChangePasswordClient';
 
-
-interface Props {
+export default function ChangePasswordPage({
+  searchParams,
+}: {
   searchParams: { code?: string };
-}
-
-export default function ChangePasswordPage({ searchParams }: Props) {
+}) {
   const code = searchParams.code || null;
 
   return <ChangePasswordClient code={code} />;
