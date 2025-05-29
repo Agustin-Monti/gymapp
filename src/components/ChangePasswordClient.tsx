@@ -1,14 +1,13 @@
 'use client';
 
+import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
-import { AuthError } from '@supabase/supabase-js';
 
-interface Props {
-  code: string | null;
-}
+export default function ChangePasswordClient() {
+  const searchParams = useSearchParams();
+  const code = searchParams.get('code');
 
-export default function ChangePasswordClient({ code }: Props) {
   const [codeExchanged, setCodeExchanged] = useState(false);
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState<string | null>(null);
@@ -39,7 +38,7 @@ export default function ChangePasswordClient({ code }: Props) {
       password: password,
     });
 
-    if (error instanceof AuthError) {
+    if (error) {
       setMessage(error.message);
     } else {
       setMessage('✅ Contraseña actualizada con éxito.');
