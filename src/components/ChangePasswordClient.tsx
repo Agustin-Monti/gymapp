@@ -1,77 +1,56 @@
-// src/components/ChangePasswordClient.tsx
-'use client';
+'use client'
 
-import { useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabaseClient';
+import { useEffect, useState } from 'react'
+import { supabase } from '@/lib/supabaseClient'
 
 export default function ChangePasswordClient() {
-  const searchParams = useSearchParams();
-  const code = searchParams.get('code');
-
-  const [codeExchanged, setCodeExchanged] = useState(false);
-  const [password, setPassword] = useState('');
-  const [message, setMessage] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState('')
+  const [password, setPassword] = useState('')
+  const [sessionReady, setSessionReady] = useState(false)
 
   useEffect(() => {
-    if (code) {
-      supabase.auth
-        .exchangeCodeForSession(code)
-        .then(({ error }) => {
-          if (error) {
-            setMessage(`Error al validar el código: ${error.message}`);
-          } else {
-            setCodeExchanged(true);
-          }
-        });
-    } else {
-      setMessage('Código no encontrado en la URL.');
+    // Verificamos que exista una sesión activa temporal
+    const checkSession = async () => {
+      const { data, error } = await supabase.auth.getSession()
+      if (error || !data.session) {
+        setMessage('❌ Enlace inválido o expirado. Intenta nuevamente desde la app.')
+      } else {
+        setSessionReady(true)
+      }
     }
-  }, [code]);
 
-  const handleChangePassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setMessage(null);
+    checkSession()
+  }, [])
 
-    const { error } = await supabase.auth.updateUser({
-      password: password,
-    });
-
+  const handleChangePassword = async () => {
+    const { error } = await supabase.auth.updateUser({ password })
     if (error) {
-      setMessage(error.message);
+      setMessage(`Error al cambiar contraseña: ${error.message}`)
     } else {
-      setMessage('✅ Contraseña actualizada con éxito.');
+      setMessage('✅ Contraseña cambiada con éxito. Ya puedes volver a la app.')
     }
+  }
 
-    setLoading(false);
-  };
+  if (message) return <p>{message}</p>
 
-  return (
-    <div style={{ padding: 32, maxWidth: 400, margin: '0 auto' }}>
-      <h2>Cambiar Contraseña</h2>
-
-      {!codeExchanged ? (
-        <p>Validando enlace...</p>
-      ) : (
-        <form onSubmit={handleChangePassword}>
-          <label htmlFor="password">Nueva contraseña:</label>
-          <input
-            type="password"
-            id="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            style={{ display: 'block', width: '100%', marginTop: 8, marginBottom: 16 }}
-            required
-          />
-          <button type="submit" disabled={loading}>
-            {loading ? 'Cambiando...' : 'Cambiar contraseña'}
-          </button>
-        </form>
-      )}
-
-      {message && <p style={{ marginTop: 20 }}>{message}</p>}
+  return sessionReady ? (
+    <div className="flex flex-col gap-4">
+      <h2 className="text-xl font-bold">Nueva contraseña</h2>
+      <input
+        type="password"
+        className="p-2 border rounded"
+        placeholder="Nueva contraseña"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+      />
+      <button
+        onClick={handleChangePassword}
+        className="bg-blue-500 text-white px-4 py-2 rounded"
+      >
+        Cambiar contraseña
+      </button>
     </div>
-  );
+  ) : (
+    <p>🔒 Validando enlace...</p>
+  )
 }
