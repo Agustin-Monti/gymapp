@@ -1,7 +1,6 @@
-'use client';
-
-import ChangePasswordClient from '@/components/ChangePasswordClient';
+// src/app/change-password/page.tsx  (Server Component)
+import ChangePasswordClientWrapper from './ChangePasswordClientWrapper';
 
 export default function ChangePasswordPage() {
-  return <ChangePasswordClient />;
+  return <ChangePasswordClientWrapper />;
 }
