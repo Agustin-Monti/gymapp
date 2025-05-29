@@ -1,23 +1,24 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabaseClient'; // tu cliente supabase
+import { useEffect, useState } from 'react';
+import { supabase } from '@/lib/supabaseClient';
 
 export default function ChangePasswordPage() {
-  const [accessToken, setAccessToken] = useState<string | null>(null);
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Obtener access_token del query string al montar el componente
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const token = urlParams.get('access_token');
-    if (token) {
-      setAccessToken(token);
-    } else {
-      setMessage('Token de acceso no válido o faltante.');
+    const url = new URL(window.location.href);
+    const code = url.searchParams.get('code');
+
+    if (code) {
+      supabase.auth.exchangeCodeForSession(code).then(({ error }) => {
+        if (error) {
+          setMessage('Error al autenticar el token: ' + error.message);
+        }
+      });
     }
   }, []);
 
@@ -26,6 +27,7 @@ export default function ChangePasswordPage() {
       setMessage('Por favor completa ambos campos');
       return;
     }
+
     if (password !== confirmPassword) {
       setMessage('Las contraseñas no coinciden');
       return;
@@ -34,28 +36,21 @@ export default function ChangePasswordPage() {
     setLoading(true);
     setMessage('');
 
-    try {
-      // Aquí pasas el token al updateUser
-      const { error } = await supabase.auth.updateUser({ password }); // ✅
+    const { error } = await supabase.auth.updateUser({ password });
 
-
-      if (error) {
-        setMessage('Error: ' + error.message);
-      } else {
-        setMessage('Contraseña cambiada correctamente. Ya podés iniciar sesión.');
-      }
-    } catch (e) {
-      setMessage('Error inesperado: ' + e);
-    } finally {
-      setLoading(false);
+    if (error) {
+      setMessage('Error al cambiar la contraseña: ' + error.message);
+    } else {
+      setMessage('Contraseña cambiada correctamente.');
     }
+
+    setLoading(false);
   };
 
   return (
-    <div className="min-h-screen bg-zinc-900 text-white flex flex-col justify-center items-center p-4">
-      <h1 className="text-3xl mb-6">Cambiar contraseña</h1>
+    <div className="min-h-screen flex flex-col justify-center items-center text-white bg-zinc-900 p-4">
+      <h1 className="text-2xl mb-4">Cambiar contraseña</h1>
       {message && <p className="mb-4">{message}</p>}
-
       <input
         type="password"
         placeholder="Nueva contraseña"
@@ -70,10 +65,9 @@ export default function ChangePasswordPage() {
         value={confirmPassword}
         onChange={(e) => setConfirmPassword(e.target.value)}
       />
-
       <button
-        disabled={loading || !accessToken}
         onClick={handleChangePassword}
+        disabled={loading}
         className="bg-green-600 hover:bg-green-700 px-6 py-3 rounded disabled:opacity-50"
       >
         {loading ? 'Cambiando...' : 'Cambiar contraseña'}
