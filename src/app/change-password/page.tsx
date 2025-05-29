@@ -1,98 +1,80 @@
-'use client'
+'use client';
 
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabaseClient'
+import { useEffect, useState } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { supabase } from '@/lib/supabaseClient';
+import { AuthError } from '@supabase/supabase-js';
 
 export default function ChangePasswordPage() {
-  const router = useRouter()
-  const [password, setPassword] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [sessionSet, setSessionSet] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState(false)
+  const searchParams = useSearchParams();
+  const router = useRouter();
 
- useEffect(() => {
-    const hash = window.location.hash;
-    const params = new URLSearchParams(hash.substring(1)); // remove the '#'
-    const access_token = params.get('access_token');
-    const refresh_token = params.get('refresh_token');
-  
-    console.log('access_token:', access_token);
-    console.log('refresh_token:', refresh_token);
-  
-    if (access_token && refresh_token) {
-      supabase.auth.setSession({
-        access_token,
-        refresh_token,
-      }).then(({ error }) => {
-        if (error) {
-          console.error('Error al establecer la sesión:', error);
-          setError('Error al establecer la sesión. ' + error.message);
-        } else {
-          setSessionSet(true);
-        }
-      });
+  const [codeExchanged, setCodeExchanged] = useState(false);
+  const [password, setPassword] = useState('');
+  const [message, setMessage] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const code = searchParams.get('code');
+    if (code) {
+      supabase.auth
+        .exchangeCodeForSession(code)
+        .then(({ error }) => {
+          if (error) {
+            setMessage(`Error al validar el código: ${error.message}`);
+          } else {
+            setCodeExchanged(true);
+          }
+        });
     } else {
-      setError('Token inválido o faltante en la URL.');
+      setMessage('Código no encontrado en la URL.');
     }
-  }, []);
+  }, [searchParams]);
 
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setMessage(null);
 
+    const { error } = await supabase.auth.updateUser({
+      password: password,
+    });
 
-
-  const handlePasswordChange = async () => {
-    setLoading(true)
-    const { error } = await supabase.auth.updateUser({ password })
-    setLoading(false)
-
-    if (error) {
-      setError('No se pudo actualizar la contraseña.')
+    if (error instanceof AuthError) {
+      setMessage(error.message);
     } else {
-      setSuccess(true)
-      setPassword('')
-      setTimeout(() => router.push('/login'), 3000)
+      setMessage('✅ Contraseña actualizada con éxito.');
+      // Opcional: redirigir al login después de cambiar la contraseña
+      // router.push('/login');
     }
-  }
+
+    setLoading(false);
+  };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
-      <div className="max-w-md w-full bg-white p-8 rounded shadow">
-        <h1 className="text-2xl font-bold mb-4">Cambiar Contraseña</h1>
+    <div style={{ padding: 32, maxWidth: 400, margin: '0 auto' }}>
+      <h2>Cambiar Contraseña</h2>
 
-        {error && (
-          <div className="bg-red-100 text-red-700 p-2 rounded mb-4">
-            {error}
-          </div>
-        )}
+      {!codeExchanged ? (
+        <p>Validando enlace...</p>
+      ) : (
+        <form onSubmit={handleChangePassword}>
+          <label htmlFor="password">Nueva contraseña:</label>
+          <input
+            type="password"
+            id="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            style={{ display: 'block', width: '100%', marginTop: 8, marginBottom: 16 }}
+            required
+          />
+          <button type="submit" disabled={loading}>
+            {loading ? 'Cambiando...' : 'Cambiar contraseña'}
+          </button>
+        </form>
+      )}
 
-        {success ? (
-          <div className="text-green-600">
-            ✅ Contraseña actualizada correctamente. Serás redirigido al login...
-          </div>
-        ) : sessionSet ? (
-          <>
-            <label className="block text-sm font-medium mb-1">
-              Nueva Contraseña
-            </label>
-            <input
-              type="password"
-              className="w-full px-4 py-2 border rounded mb-4"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-            <button
-              onClick={handlePasswordChange}
-              disabled={loading || password.length < 6}
-              className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 disabled:opacity-50"
-            >
-              {loading ? 'Actualizando...' : 'Cambiar Contraseña'}
-            </button>
-          </>
-        ) : (
-          <p className="text-gray-600">Verificando enlace...</p>
-        )}
-      </div>
+      {message && <p style={{ marginTop: 20 }}>{message}</p>}
     </div>
-  )
+  );
 }
