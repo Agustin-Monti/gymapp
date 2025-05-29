@@ -1,4 +1,4 @@
-// src/app/change-password/ChangePasswordClientWrapper.tsx  (Client Component)
+// src/app/change-password/ChangePasswordClientWrapper.tsx
 'use client';
 
 import ChangePasswordClient from '@/components/ChangePasswordClient';
