@@ -1,60 +1,82 @@
-'use client'
+'use client';
 
-import { useEffect, useState } from 'react'
-import { supabase } from '@/lib/supabaseClient'
+import { useEffect, useState } from 'react';
+import { supabase } from '@/lib/supabaseClient';
 
-export default function ChangePasswordClient() {
-  const [message, setMessage] = useState('')
-  const [password, setPassword] = useState('')
-  const [sessionReady, setSessionReady] = useState(false)
+interface Props {
+  code: string | null;
+}
+
+export default function ChangePasswordClient({ code }: Props) {
+  const [isVerified, setIsVerified] = useState(false);
+  const [password, setPassword] = useState('');
+  const [message, setMessage] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // Verificamos que exista una sesión activa temporal
-    const checkSession = async () => {
-      const { data, error } = await supabase.auth.getSession()
-
-      console.log("🔍 data:", data)
-      console.log("❌ error:", error)
-      
-      if (error || !data.session) {
-        setMessage('❌ Enlace inválido o expirado. Intenta nuevamente desde la app.')
-      } else {
-        setSessionReady(true)
+    const verifyRecoveryCode = async () => {
+      if (!code) {
+        setMessage('❌ Código no encontrado en la URL.');
+        return;
       }
-    }
 
-    checkSession()
-  }, [])
+      const { data, error } = await supabase.auth.verifyOtp({
+        type: 'recovery',
+        token: code,
+      });
 
-  const handleChangePassword = async () => {
-    const { error } = await supabase.auth.updateUser({ password })
+      console.log('🔍 verifyOtp result:', { data, error });
+
+      if (error) {
+        setMessage('❌ Enlace inválido o expirado. Intenta nuevamente desde la app.');
+      } else {
+        setIsVerified(true);
+      }
+    };
+
+    verifyRecoveryCode();
+  }, [code]);
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setMessage(null);
+
+    const { error } = await supabase.auth.updateUser({ password });
+
     if (error) {
-      setMessage(`Error al cambiar contraseña: ${error.message}`)
+      setMessage(`❌ Error al cambiar la contraseña: ${error.message}`);
     } else {
-      setMessage('✅ Contraseña cambiada con éxito. Ya puedes volver a la app.')
+      setMessage('✅ Contraseña actualizada con éxito. Ya puedes iniciar sesión en la app.');
     }
-  }
 
-  if (message) return <p>{message}</p>
+    setLoading(false);
+  };
 
-  return sessionReady ? (
-    <div className="flex flex-col gap-4">
-      <h2 className="text-xl font-bold">Nueva contraseña</h2>
-      <input
-        type="password"
-        className="p-2 border rounded"
-        placeholder="Nueva contraseña"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-      />
-      <button
-        onClick={handleChangePassword}
-        className="bg-blue-500 text-white px-4 py-2 rounded"
-      >
-        Cambiar contraseña
-      </button>
+  return (
+    <div style={{ padding: 32, maxWidth: 400, margin: '0 auto' }}>
+      <h2>Cambiar Contraseña</h2>
+
+      {!isVerified ? (
+        <p>🔄 Validando enlace...</p>
+      ) : (
+        <form onSubmit={handleChangePassword}>
+          <label htmlFor="password">Nueva contraseña:</label>
+          <input
+            type="password"
+            id="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            style={{ display: 'block', width: '100%', marginTop: 8, marginBottom: 16 }}
+            required
+          />
+          <button type="submit" disabled={loading}>
+            {loading ? 'Cambiando...' : 'Cambiar contraseña'}
+          </button>
+        </form>
+      )}
+
+      {message && <p style={{ marginTop: 20 }}>{message}</p>}
     </div>
-  ) : (
-    <p>🔒 Validando enlace...</p>
-  )
+  );
 }
