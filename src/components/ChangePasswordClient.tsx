@@ -12,6 +12,10 @@ export default function ChangePasswordClient() {
     // Verificamos que exista una sesión activa temporal
     const checkSession = async () => {
       const { data, error } = await supabase.auth.getSession()
+
+      console.log("🔍 data:", data)
+      console.log("❌ error:", error)
+      
       if (error || !data.session) {
         setMessage('❌ Enlace inválido o expirado. Intenta nuevamente desde la app.')
       } else {
