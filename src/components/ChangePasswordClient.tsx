@@ -1,3 +1,4 @@
+// src/components/ChangePasswordClient.tsx
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -5,9 +6,10 @@ import { supabase } from '@/lib/supabaseClient';
 
 interface Props {
   code: string | null;
+  email: string | null;
 }
 
-export default function ChangePasswordClient({ code }: Props) {
+export default function ChangePasswordClient({ code, email }: Props) {
   const [isVerified, setIsVerified] = useState(false);
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState<string | null>(null);
@@ -15,14 +17,15 @@ export default function ChangePasswordClient({ code }: Props) {
 
   useEffect(() => {
     const verifyRecoveryCode = async () => {
-      if (!code) {
-        setMessage('❌ Código no encontrado en la URL.');
+      if (!code || !email) {
+        setMessage('❌ Código o correo no encontrado en la URL.');
         return;
       }
 
       const { data, error } = await supabase.auth.verifyOtp({
         type: 'recovery',
         token: code,
+        email: email,
       });
 
       console.log('🔍 verifyOtp result:', { data, error });
@@ -35,7 +38,7 @@ export default function ChangePasswordClient({ code }: Props) {
     };
 
     verifyRecoveryCode();
-  }, [code]);
+  }, [code, email]);
 
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
