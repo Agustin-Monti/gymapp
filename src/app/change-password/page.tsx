@@ -1,40 +1,60 @@
-'use client';
-
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 
-export default function ChangePasswordPage() {
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
+function parseHash(hash: string) {
+  return hash
+    .substring(1)
+    .split('&')
+    .reduce((acc, pair) => {
+      const [key, value] = pair.split('=');
+      acc[key] = value;
+      return acc;
+    }, {} as Record<string, string>);
+}
 
-  const handleChangePassword = async () => {
-    setLoading(true);
+export default function ChangePassword() {
+  const [loading, setLoading] = useState(true);
+  const [session, setSession] = useState<boolean | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-    const { error } = await supabase.auth.updateUser({
-      password: password,
-    });
-
-    setLoading(false);
-
-    if (error) {
-      alert('Error al cambiar la contraseña: ' + error.message);
-    } else {
-      alert('Contraseña cambiada correctamente');
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (!hash) {
+      setError('Token de acceso no encontrado en la URL.');
+      setLoading(false);
+      return;
     }
-  };
+    const tokens = parseHash(hash);
+
+    if (!tokens.access_token || !tokens.refresh_token) {
+      setError('Token inválido o incompleto.');
+      setLoading(false);
+      return;
+    }
+
+    supabase.auth
+      .setSession({
+        access_token: tokens.access_token,
+        refresh_token: tokens.refresh_token,
+      })
+      .then(({ error }) => {
+        if (error) {
+          setError(error.message);
+          setLoading(false);
+          return;
+        }
+        setSession(true); // o podes guardar el user si querés
+        setLoading(false);
+      });
+  }, []);
+
+  if (loading) return <p>Cargando...</p>;
+  if (error) return <p>Error: {error}</p>;
 
   return (
     <div>
-      <h2>Cambiar Contraseña</h2>
-      <input
-        type="password"
-        placeholder="Nueva contraseña"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-      />
-      <button onClick={handleChangePassword} disabled={loading}>
-        {loading ? 'Cambiando...' : 'Cambiar Contraseña'}
-      </button>
+      <h1>Cambia tu contraseña</h1>
+      {/* Aquí va tu formulario para cambiar la contraseña */}
     </div>
   );
 }
