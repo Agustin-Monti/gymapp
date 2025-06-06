@@ -7,7 +7,7 @@ export default function EliminarDatosPage() {
         </h1>
 
         <p className="mb-4 text-gray-300 text-center">
-          Nos tomamos muy en serio tu privacidad. Podés solicitar la eliminación completa de tus datos personales asociados a tu cuenta en la app <span className="font-semibold text-white">Bicho3</span>.
+          Nos tomamos muy en serio tu privacidad. Podés solicitar la eliminación completa de tus datos personales asociados a tu cuenta en la app <span className="font-semibold text-white">La Vieja Usina</span>.
         </p>
 
         <p className="mb-4 text-gray-400 text-center">
@@ -15,7 +15,7 @@ export default function EliminarDatosPage() {
         </p>
 
         <ul className="mb-4 text-gray-300 list-disc list-inside">
-          <li>Desde la app: <span className="text-white font-medium">Perfil &gt; Eliminar Cuenta</span></li>
+          <li>Desde la app: <span className="text-white font-medium">Perfil &gt; Solicitar Eliminar Datos Personales</span></li>
           <li>Por correo: enviando una solicitud a <a href="mailto:soporte@tudominio.com" className="text-blue-500 underline hover:text-blue-400">soporte@tudominio.com</a></li>
         </ul>
 
