@@ -7,7 +7,7 @@ export default function EliminarCuentaPage() {
         </h1>
 
         <p className="mb-4 text-gray-300 text-center">
-          Si deseas eliminar tu cuenta de la aplicación <span className="font-semibold text-white">Bicho3</span>, podés hacerlo desde la app:
+          Si deseas eliminar tu cuenta de la aplicación <span className="font-semibold text-white">La Vieja Usina</span>, podés hacerlo desde la app:
         </p>
 
         <div className="mb-4 text-center text-white font-medium">
