@@ -7,7 +7,7 @@ export default function PoliticaPrivacidadPage() {
         </h1>
 
         <p className="text-gray-300 mb-4">
-          En <span className="font-semibold text-white">[Nombre de tu App o Gimnasio]</span>, nos tomamos en serio tu privacidad. Esta Política de Privacidad explica cómo recopilamos, usamos y protegemos tu información personal.
+          En <span className="font-semibold text-white">La Vieja Usina</span>, nos tomamos en serio tu privacidad. Esta Política de Privacidad explica cómo recopilamos, usamos y protegemos tu información personal.
         </p>
 
         <h2 className="text-xl font-semibold mt-6 mb-2 text-white">1. Información que recopilamos</h2>
