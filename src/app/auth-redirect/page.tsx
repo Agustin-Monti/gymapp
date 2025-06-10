@@ -1,8 +1,8 @@
 'use client';
 
-export const dynamic = 'force-dynamic';
+import dynamic from 'next/dynamic';
 
-import AuthRedirectClient from '../../components/AuthRedirectClient';
+const AuthRedirectClient = dynamic(() => import('../../components/AuthRedirectClient'), { ssr: false });
 
 export default function Page() {
   return <AuthRedirectClient />;
