@@ -22,11 +22,13 @@ export default function AuthRedirectClient() {
     if (!t || !ty) return;
 
     if (ty === 'email_confirmation' && em) {
-      const url = `myapp://auth/confirm?token=${t}&email=${encodeURIComponent(em)}`;
-      window.location.href = url;
+      const deepLink = `myapp://auth/confirm?token=${t}&email=${encodeURIComponent(em)}`;
+      console.log('🔗 Deep link generado:', deepLink); // 👈 esto imprime el enlace final
+      window.location.href = deepLink;
     } else if (ty === 'recovery') {
-      const url = `myapp://auth/reset?token=${t}`;
-      window.location.href = url;
+      const deepLink = `myapp://auth/reset?token=${t}`;
+      console.log('🔗 Deep link generado:', deepLink);
+      window.location.href = deepLink;
     }
   }, [searchParams]);
 
