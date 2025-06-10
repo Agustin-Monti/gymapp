@@ -8,19 +8,25 @@ export default function AuthRedirectClient() {
 
   const [token, setToken] = useState<string | null>(null);
   const [type, setType] = useState<string | null>(null);
+  const [email, setEmail] = useState<string | null>(null);
 
   useEffect(() => {
     const t = searchParams.get('token');
     const ty = searchParams.get('type');
+    const em = searchParams.get('email'); // 👈 nuevo
+
     setToken(t);
     setType(ty);
+    setEmail(em);
 
     if (!t || !ty) return;
 
-    if (ty === 'email_confirmation') {
-      window.location.href = `myapp://auth/confirm?token=${t}`;
+    if (ty === 'email_confirmation' && em) {
+      const url = `myapp://auth/confirm?token=${t}&email=${encodeURIComponent(em)}`;
+      window.location.href = url;
     } else if (ty === 'recovery') {
-      window.location.href = `myapp://auth/reset?token=${t}`;
+      const url = `myapp://auth/reset?token=${t}`;
+      window.location.href = url;
     }
   }, [searchParams]);
 
