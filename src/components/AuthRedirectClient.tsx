@@ -25,7 +25,7 @@ export default function AuthRedirectClient() {
       const deepLink = `myapp://auth/confirm?token=${t}&email=${encodeURIComponent(em)}`;
       console.log('🔗 Deep link generado:', deepLink); // 👈 esto imprime el enlace final
       window.location.href = deepLink;
-    } else if (ty === 'recovery') {
+    } else if (ty === 'recovery' && em) {
       const deepLink = `myapp://auth/reset?token=${t}&email=${encodeURIComponent(em)}`;
       console.log('🔗 Deep link generado:', deepLink);
       window.location.href = deepLink;
