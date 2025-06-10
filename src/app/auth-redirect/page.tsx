@@ -1,34 +1,35 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 
 export default function AuthRedirectPage() {
   const searchParams = useSearchParams();
 
+  const [token, setToken] = useState<string | null>(null);
+  const [type, setType] = useState<string | null>(null);
+
   useEffect(() => {
-    const token = searchParams.get('token');
-    const type = searchParams.get('type');
+    const t = searchParams.get('token');
+    const ty = searchParams.get('type');
+    setToken(t);
+    setType(ty);
 
-    if (!token || !type) return;
+    if (!t || !ty) return;
 
-    // Redirigir según el tipo
-    if (type === 'email_confirmation') {
-      window.location.href = `myapp://auth/confirm?token=${token}`;
-    } else if (type === 'recovery') {
-      window.location.href = `myapp://auth/reset?token=${token}`;
+    if (ty === 'email_confirmation') {
+      window.location.href = `myapp://auth/confirm?token=${t}`;
+    } else if (ty === 'recovery') {
+      window.location.href = `myapp://auth/reset?token=${t}`;
     }
   }, [searchParams]);
-
-  const token = searchParams.get('token');
-  const type = searchParams.get('type');
 
   return (
     <main style={{ padding: '2rem', textAlign: 'center' }}>
       <h1>Redirigiendo a la app...</h1>
       <p>Tipo: {type}</p>
       <p>Si no pasa nada automáticamente, copiá este token:</p>
-      <code>{token}</code>
+      <code style={{ wordBreak: 'break-all' }}>{token}</code>
     </main>
   );
 }
